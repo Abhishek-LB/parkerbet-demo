@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ParkerBet Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    body { background: #0f172a; color: white; padding: 16px; }
+    .container { max-width: 900px; margin: auto; }
+    .card { background: #1e293b; border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+    .header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .title { font-size: 28px; font-weight: bold; }
+    .muted { color: #94a3b8; }
+    .balance { font-size: 24px; font-weight: bold; }
+    button { background: #22c55e; border: none; padding: 10px 14px; border-radius: 10px; cursor: pointer; color: white; }
+    input { padding: 10px; border-radius: 10px; border: none; width: 100%; margin-bottom: 10px; }
+    .grid { display: grid; gap: 12px; }
+    .badge { background: #334155; padding: 6px 10px; border-radius: 999px; display: inline-block; margin-top: 8px; }
+    .history-item { border-top: 1px solid #334155; padding-top: 12px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card header">
+      <div>
+        <div class="title">ParkerBet</div>
+        <div class="muted">Welcome, Abhishek</div>
+      </div>
+      <div>
+        <div class="muted">Current Balance</div>
+        <div class="balance" id="balance">₹14,00,000</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Deposit Funds</h2>
+      <input type="number" id="depositInput" placeholder="Enter amount" />
+      <button onclick="depositFunds()">Deposit</button>
+    </div>
+
+    <div class="card">
+      <h2>Live IPL Matches</h2>
+      <div class="grid" id="matches"></div>
+    </div>
+
+    <div class="card">
+      <h2>Bet History</h2>
+      <div id="history"></div>
+    </div>
+  </div>
+
+  <script>
+    let balance = 1400000;
+
+    const matches = [
+      { teams: "RCB vs CSK", odds: 1.85, favored: "RCB" },
+      { teams: "MI vs KKR", odds: 2.10, favored: "MI" },
+      { teams: "GT vs RR", odds: 1.75, favored: "GT" },
+      { teams: "LSG vs DC", odds: 2.35, favored: "DC" }
+    ];
+
+    let history = [
+      { match: "RCB vs PBKS", result: "Won", winnings: 95000, reason: "Strong batting lineup advantage." },
+      { match: "CSK vs MI", result: "Won", winnings: 66000, reason: "Pitch favored spin bowlers." }
+    ];
+
+    function formatINR(num) {
+      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
+    }
+
+    function updateUI() {
+      document.getElementById('balance').textContent = formatINR(balance);
+
+      const matchBox = document.getElementById('matches');
+      matchBox.innerHTML = '';
+      matches.forEach((m, index) => {
+        matchBox.innerHTML += `
+          <div class="card">
+            <h3>${m.teams}</h3>
+            <p>Odds: ${m.odds}x</p>
+            <span class="badge">${m.favored} Favored</span><br><br>
+            <button onclick="placeBet(${index})">Place ₹10,000 Bet</button>
+          </div>`;
+      });
+
+      const historyBox = document.getElementById('history');
+      historyBox.innerHTML = '';
+      history.forEach(h => {
+        historyBox.innerHTML += `
+          <div class="history-item">
+            <strong>${h.match}</strong> - ${h.result}<br>
+            ${h.reason}<br>
+            Winnings: ${formatINR(h.winnings)}
+          </div>`;
+      });
+    }
+
+    function depositFunds() {
+      const amount = Number(document.getElementById('depositInput').value);
+      if (amount > 0) {
+        balance += amount;
+        updateUI();
+      }
+    }
+
+    function placeBet(index) {
+      const stake = 10000;
+      if (balance < stake) return alert('Insufficient balance');
+
+      const match = matches[index];
+      const won = Math.random() > 0.4;
+      const winnings = won ? Math.floor(stake * match.odds) : 0;
+
+      balance = balance - stake + winnings;
+
+      history.unshift({
+        match: match.teams,
+        result: won ? 'Won' : 'Lost',
+        winnings,
+        reason: won ? `Prediction on ${match.favored} succeeded.` : 'Unexpected upset.'
+      });
+
+      updateUI();
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
